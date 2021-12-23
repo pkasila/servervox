@@ -2,11 +2,13 @@ mod renderer;
 
 use std::ops::Deref;
 use corevox::devices::device::Device;
+use corevox::devices::prototype_device::{Frame, PrototypeDevice};
 use corevox::network::server::VoxServer;
 use corevox::devices::science_fair_128::ScienceFair128;
 use crate::renderer::BaseRenderer;
 
-fn main() {
+#[tokio::main]
+pub async fn main() {
     println!("Vox Server");
 
     let device = Box::new(ScienceFair128 {});
@@ -22,5 +24,5 @@ fn main() {
 
     println!("Starting listener on {}", serv.address);
 
-    serv.start_listener().unwrap();
+    serv.start_listener().await;
 }
