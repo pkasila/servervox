@@ -1,6 +1,7 @@
 use std::io::Write;
 use std::process::{Child, Command, Stdio};
 use std::thread;
+use std::time::Duration;
 use corevox::devices::device::Device;
 use corevox::network::messages::{DeviceInformation, VoxPack};
 use corevox::network::server::renderer::Renderer;
@@ -25,7 +26,7 @@ impl BaseRenderer {
     fn start_daemon(&mut self) {
         self.ffmpeg_process = match Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -re -f rawvideo -pix_fmt rgb565le -s:v {}x{} -r 168 -i pipe: -f fbdev /dev/fb0",
+            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s:v {}x{} -r 168 -i pipe: -f fbdev /dev/fb0",
                          self.device_information.frame_size[0], self.device_information.frame_size[1]))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -41,9 +42,20 @@ impl Renderer for BaseRenderer {
         let mut p = pack;
         let framerate = p.z * self.device_information.pov_frequency;
         println!("Received {} bytes (framerate needed: {})", p.raw.capacity(), framerate);
+
+        let chunks = p.raw.chunks(p.z as usize);
+
         for i in 0..24 {
-            self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                .unwrap().write(&*p.raw);
+            for chunk in chunks.clone() {
+                self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
+                    .unwrap().write(chunk);
+                thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
+            }
+            for chunk in chunks.clone().rev() {
+                self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
+                    .unwrap().write(chunk);
+                thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
+            }
         }
     }
 }
