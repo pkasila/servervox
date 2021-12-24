@@ -45,7 +45,7 @@ impl Renderer for BaseRenderer {
 
         let frame_size = self.device_information.frame_size[0] * self.device_information.frame_size[1] * 2;
 
-        for _ in 0..24 {
+        for _ in 0..self.device_information.pov_frequency {
             for chunk in p.raw.chunks(frame_size as usize) {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
