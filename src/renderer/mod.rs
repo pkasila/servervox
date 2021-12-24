@@ -43,17 +43,17 @@ impl Renderer for BaseRenderer {
         let framerate = p.z * self.device_information.pov_frequency;
         println!("Received {} bytes (framerate needed: {})", p.raw.capacity(), framerate);
 
-        let chunks = p.raw.chunks(p.z as usize);
-
-        for i in 0..24 {
-            for chunk in chunks.clone() {
+        for _ in 0..24 {
+            for chunk in p.raw.chunks(p.z as usize) {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
+                println!("Processed chunk of {}", chunk.len());
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
             }
-            for chunk in chunks.clone().rev() {
+            for chunk in p.raw.chunks(p.z as usize).rev() {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
+                println!("Processed chunk of {}", chunk.len());
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
             }
         }
