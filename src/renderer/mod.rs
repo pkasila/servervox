@@ -43,7 +43,7 @@ impl Renderer for BaseRenderer {
         let framerate = p.z * self.device_information.pov_frequency;
         println!("Received {} bytes (framerate needed: {})", p.raw.capacity(), framerate);
 
-        let frame_size = self.device_information.frame_size[0] * self.device_information.frame_size[1];
+        let frame_size = self.device_information.frame_size[0] * self.device_information.frame_size[1] * 2;
 
         for _ in 0..24 {
             for chunk in p.raw.chunks(frame_size as usize) {
