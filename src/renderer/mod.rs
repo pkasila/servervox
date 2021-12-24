@@ -12,10 +12,12 @@ pub struct BaseRenderer {
 
 impl BaseRenderer {
     pub fn new(device_information: DeviceInformation) -> Self {
-        let r = BaseRenderer {
+        let mut r = BaseRenderer {
             device_information,
             ffmpeg_process: None,
         };
+
+        r.start_daemon();
 
         return r;
     }
