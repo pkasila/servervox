@@ -41,12 +41,7 @@ impl Renderer for BaseRenderer {
         let mut p = pack;
         let framerate = p.z * self.device_information.pov_frequency;
         println!("Received {} bytes (framerate needed: {})", p.raw.capacity(), framerate);
-        p.raw.reverse();
-        for i in 0..12 {
-            p.raw.reverse();
-            self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                .unwrap().write(&*p.raw);
-            p.raw.reverse();
+        for i in 0..24 {
             self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                 .unwrap().write(&*p.raw);
         }
