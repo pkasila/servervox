@@ -47,13 +47,13 @@ impl Renderer for BaseRenderer {
             for chunk in p.raw.chunks(p.z as usize) {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
-                println!("Processed chunk of {}", chunk.len());
+                println!("Processed chunk of {} {}", chunk.len(), (1 * 1000000000 / framerate) as u32);
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
             }
             for chunk in p.raw.chunks(p.z as usize).rev() {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
-                println!("Processed chunk of {}", chunk.len());
+                println!("Processed chunk of {} {}", chunk.len(), (1 * 1000000000 / framerate) as u32);
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
             }
         }
