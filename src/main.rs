@@ -17,9 +17,7 @@ pub async fn main() {
     let serv = VoxServer {
         address: "0.0.0.0:1990".to_string(),
         device,
-        renderer: Box::new(BaseRenderer {
-            device_information: info
-        }),
+        renderer: Box::new(BaseRenderer::new(info)),
     };
 
     println!("Starting listener on {}", serv.address);
