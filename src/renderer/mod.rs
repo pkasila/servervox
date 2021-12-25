@@ -26,7 +26,7 @@ impl BaseRenderer {
     fn start_daemon(&mut self) {
         self.ffmpeg_process = match Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -f rawvideo -pix_fmt bgra -s {}x{} -r 168 -i pipe: -f fbdev /dev/fb0",
+            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s {}x{} -r 168 -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
                          self.device_information.frame_size[0], self.device_information.frame_size[1]))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -44,7 +44,7 @@ impl Renderer for BaseRenderer {
 
         let mut t = Command::new("/bin/sh")
             .arg("-c")
-            .arg("ffmpeg -f mp4 -c:v h264_v4l2m2m -i pipe: -pix_fmt bgra -f rawvideo pipe:")
+            .arg("ffmpeg -f mp4 -c:v h264_v4l2m2m -i pipe: -pix_fmt rgb565le -f rawvideo pipe:")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
