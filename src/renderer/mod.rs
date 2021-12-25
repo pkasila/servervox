@@ -40,7 +40,7 @@ impl BaseRenderer {
 impl Renderer for BaseRenderer {
     fn handle_vox_pack(&self, pack: VoxPack) {
         let mut p = pack;
-        println!("Received {} bytes (framerate needed: {})", p.raw.len(), framerate);
+        println!("Received {} bytes", p.raw.len());
 
         let mut t = Command::new("/bin/sh")
             .arg("-c")
