@@ -44,8 +44,7 @@ impl Renderer for BaseRenderer {
 
         let mut t = Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -f mp4 -c:v h264_v4l2m2m -s {}x{} -i pipe: -pix_fmt bgra -f rawvideo pipe:",
-                         self.device_information.frame_size[0], self.device_information.frame_size[1]))
+            .arg("ffmpeg -f mp4 -c:v h264_v4l2m2m -i pipe: -pix_fmt bgra -f rawvideo pipe:")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
