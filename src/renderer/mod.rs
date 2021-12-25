@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Read, Write};
 use std::process::{Child, Command, Stdio};
 use std::thread;
 use std::time::Duration;
@@ -26,7 +26,7 @@ impl BaseRenderer {
     fn start_daemon(&mut self) {
         self.ffmpeg_process = match Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s:v {}x{} -r 168 -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
+            .arg(format!("ffmpeg -f rawvideo -pix_fmt bgra -s {}x{} -r 168 -i pipe: -f fbdev /dev/fb0",
                          self.device_information.frame_size[0], self.device_information.frame_size[1]))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -40,18 +40,34 @@ impl BaseRenderer {
 impl Renderer for BaseRenderer {
     fn handle_vox_pack(&self, pack: VoxPack) {
         let mut p = pack;
-        let framerate = p.z * self.device_information.pov_frequency;
-        println!("Received {} bytes (framerate needed: {})", p.raw.capacity(), framerate);
+        println!("Received {} bytes (framerate needed: {})", p.raw.len(), framerate);
 
-        let frame_size = self.device_information.frame_size[0] * self.device_information.frame_size[1] * 2;
+        let mut t = Command::new("/bin/sh")
+            .arg("-c")
+            .arg("ffmpeg -f mp4 -i pipe: -pix_fmt bgra -f rawvideo pipe:")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+
+        if let Some(mut stdin) = t.stdin.take() {
+            stdin.write_all(&p.raw).unwrap();
+        }
+
+        let mut data: Vec<u8> = vec![];
+        t.stdout.unwrap().read_to_end(&mut data).unwrap();
+
+        let framerate = p.z * self.device_information.pov_frequency;
+
+        let size = self.device_information.frame_size[0] * self.device_information.frame_size[1] * 2;
 
         for _ in 0..self.device_information.pov_frequency {
-            for chunk in p.raw.chunks(frame_size as usize) {
+            for chunk in data.chunks(size as usize) {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
             }
-            for chunk in p.raw.chunks(frame_size as usize).rev() {
+            for chunk in data.chunks(size as usize).rev() {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
                 thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
