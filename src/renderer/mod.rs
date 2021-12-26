@@ -58,7 +58,7 @@ impl Renderer for BaseRenderer {
         let mut data: Vec<u8> = vec![];
         t.stdout.unwrap().read_to_end(&mut data).unwrap();
 
-        let framerate = self.device_information.vox_size[2] * self.device_information.pov_frequency * 2;
+        let framerate = self.device_information.vox_size[2] * self.device_information.pov_frequency;
 
         let size = self.device_information.vox_size[0] * self.device_information.vox_size[1] * 2;
 
