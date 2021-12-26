@@ -42,7 +42,7 @@ impl Renderer for BaseRenderer {
 
         let mut p = Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -f rawvideo -pix_fmt bgra -s {}x{} -r {} -i pipe: -f fbdev /dev/fb0",
+            .arg(format!("ffmpeg -re -f rawvideo -pix_fmt bgra -s {}x{} -r {} -i pipe: -f fbdev /dev/fb0",
                          self.device_information.vox_size[0], self.device_information.vox_size[1],
                          self.device_information.vox_size[2] * self.device_information.pov_frequency))
             .stdin(Stdio::piped())
