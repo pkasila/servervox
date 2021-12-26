@@ -26,8 +26,9 @@ impl BaseRenderer {
     fn start_daemon(&mut self) {
         self.ffmpeg_process = match Command::new("/bin/sh")
             .arg("-c")
-            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s {}x{} -r 168 -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
-                         self.device_information.frame_size[0], self.device_information.frame_size[1]))
+            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s {}x{} -r {} -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
+                         self.device_information.vox_size[0], self.device_information.vox_size[1],
+                         self.device_information.max_framerate))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn() {
@@ -57,9 +58,9 @@ impl Renderer for BaseRenderer {
         let mut data: Vec<u8> = vec![];
         t.stdout.unwrap().read_to_end(&mut data).unwrap();
 
-        let framerate = p.z * self.device_information.pov_frequency;
+        let framerate = self.device_information.vox_size[2] * self.device_information.pov_frequency;
 
-        let size = self.device_information.frame_size[0] * self.device_information.frame_size[1] * 2;
+        let size = self.device_information.vox_size[0] * self.device_information.vox_size[1] * 2;
 
         for _ in 0..self.device_information.pov_frequency {
             for chunk in data.chunks(size as usize) {
