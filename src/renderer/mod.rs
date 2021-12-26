@@ -28,7 +28,7 @@ impl BaseRenderer {
             .arg("-c")
             .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s {}x{} -r {} -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
                          self.device_information.vox_size[0], self.device_information.vox_size[1],
-                         self.device_information.max_framerate))
+                         self.device_information.vox_size[2] * self.device_information.pov_frequency))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn() {
