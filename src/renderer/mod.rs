@@ -51,7 +51,7 @@ impl Renderer for BaseRenderer {
             .unwrap();
 
         if let Some(mut stdin) = p.stdin.take() {
-            for _ in 0..10 {
+            for _ in 0..10 * self.device_information.pov_frequency {
                 stdin.write_all(&data).unwrap();
             }
         }
