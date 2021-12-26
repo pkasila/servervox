@@ -8,33 +8,15 @@ use corevox::network::server::renderer::Renderer;
 
 pub struct BaseRenderer {
     pub device_information: DeviceInformation,
-    ffmpeg_process: Option<Child>,
 }
 
 impl BaseRenderer {
     pub fn new(device_information: DeviceInformation) -> Self {
         let mut r = BaseRenderer {
             device_information,
-            ffmpeg_process: None,
         };
-
-        r.start_daemon();
 
         return r;
-    }
-
-    fn start_daemon(&mut self) {
-        self.ffmpeg_process = match Command::new("/bin/sh")
-            .arg("-c")
-            .arg(format!("ffmpeg -f rawvideo -pix_fmt rgb565le -s {}x{} -r {} -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
-                         self.device_information.vox_size[0], self.device_information.vox_size[1],
-                         self.device_information.max_framerate))
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn() {
-            Err(why) => panic!("couldn't spawn ffmpeg: {}", why),
-            Ok(process) => Some(process),
-        };
     }
 }
 
@@ -45,7 +27,9 @@ impl Renderer for BaseRenderer {
 
         let mut t = Command::new("/bin/sh")
             .arg("-c")
-            .arg("ffmpeg -f mp4 -c:v h264_v4l2m2m -i pipe: -pix_fmt rgb565le -f rawvideo pipe:")
+            .arg(format!("ffmpeg -loop {} -r {} -f mp4 -c:v h264_v4l2m2m -i pipe: -pix_fmt bgra -f fbdev /dev/fb0",
+                         self.device_information.pov_frequency * 10,
+                         self.device_information.pov_frequency * self.device_information.vox_size[2]))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
@@ -53,28 +37,6 @@ impl Renderer for BaseRenderer {
 
         if let Some(mut stdin) = t.stdin.take() {
             stdin.write_all(&p.raw).unwrap();
-        }
-
-        let mut data: Vec<u8> = vec![];
-        t.stdout.unwrap().read_to_end(&mut data).unwrap();
-
-        let framerate = self.device_information.vox_size[2] * self.device_information.pov_frequency;
-
-        let size = self.device_information.vox_size[0] * self.device_information.vox_size[1] * 2;
-
-        for _ in 0..10 {
-            for _ in 0..(self.device_information.pov_frequency/2) {
-                for chunk in data.chunks(size as usize) {
-                    self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                        .unwrap().write(chunk);
-                    thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
-                }
-                for chunk in data.chunks(size as usize).rev() {
-                    self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                        .unwrap().write(chunk);
-                    thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
-                }
-            }
         }
     }
 }
