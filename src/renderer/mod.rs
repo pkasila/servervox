@@ -62,16 +62,18 @@ impl Renderer for BaseRenderer {
 
         let size = self.device_information.vox_size[0] * self.device_information.vox_size[1] * 2;
 
-        for _ in 0..(self.device_information.pov_frequency/2) {
-            for chunk in data.chunks(size as usize) {
-                self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                    .unwrap().write(chunk);
-                thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
-            }
-            for chunk in data.chunks(size as usize).rev() {
-                self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
-                    .unwrap().write(chunk);
-                thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
+        for _ in 0..10 {
+            for _ in 0..(self.device_information.pov_frequency/2) {
+                for chunk in data.chunks(size as usize) {
+                    self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
+                        .unwrap().write(chunk);
+                    thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
+                }
+                for chunk in data.chunks(size as usize).rev() {
+                    self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
+                        .unwrap().write(chunk);
+                    thread::sleep(Duration::new(0, (1 * 1000000000 / framerate) as u32));
+                }
             }
         }
     }
