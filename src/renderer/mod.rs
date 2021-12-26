@@ -62,7 +62,7 @@ impl Renderer for BaseRenderer {
 
         let size = self.device_information.vox_size[0] * self.device_information.vox_size[1] * 2;
 
-        for _ in 0..self.device_information.pov_frequency {
+        for _ in 0..(self.device_information.pov_frequency/2) {
             for chunk in data.chunks(size as usize) {
                 self.ffmpeg_process.as_ref().unwrap().stdin.as_ref()
                     .unwrap().write(chunk);
