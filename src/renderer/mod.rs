@@ -40,7 +40,7 @@ impl Renderer for BaseRenderer {
 
         let mut fb = Framebuffer::new(Path::new("/dev/fb0")).unwrap();
 
-        for _ in 0..30 * self.device_information.pov_frequency * self.device_information.vox_size[0] {
+        for _ in 0..30 * self.device_information.pov_frequency {
             for chunk in data.chunks((4 * self.device_information.vox_size[0] * self.device_information.vox_size[1]) as usize) {
                 fb.write_frame(chunk);
                 sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32))
