@@ -1,6 +1,5 @@
 mod renderer;
 
-use std::ops::Deref;
 use corevox::devices::device::Device;
 use corevox::network::server::VoxServer;
 use corevox::devices::science_fair_240::ScienceFair240;

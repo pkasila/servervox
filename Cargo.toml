@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.15.0", features = ["full"] }
 corevox = { path = "../corevox" }
+framebuffer = "0.3.1"
