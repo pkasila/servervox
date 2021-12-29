@@ -38,7 +38,6 @@ impl Renderer for BaseRenderer {
         let mut data: Vec<u8> = vec![];
         t.stdout.unwrap().read_to_end(&mut data).unwrap();
 
-        Framebuffer::set_kd_mode_ex(Path::new("/dev/fb0"), KdMode::Graphics).unwrap();
         let mut fb = Framebuffer::new(Path::new("/dev/fb0")).unwrap();
 
         for _ in 0..10 * self.device_information.pov_frequency {
@@ -48,6 +47,5 @@ impl Renderer for BaseRenderer {
             }
         }
 
-        Framebuffer::set_kd_mode_ex(Path::new("/dev/fb0"), KdMode::Text).unwrap();
     }
 }
