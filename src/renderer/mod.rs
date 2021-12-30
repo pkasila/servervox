@@ -61,18 +61,27 @@ impl Renderer for BaseRenderer {
                 for chunk in output_data.chunks(chunk_size).step_by(2) {
                     // write to framebuffer
                     fb.write_frame(chunk);
+                    println!("Rendered");
                     // sleep for display panel refresh time
-                    sleep(Duration::new(0, 10000000));
+                    sleep(Duration::new(0, 15000000));
+                    println!("Refreshed");
                     // turn on the backlight
                     pin.set_high();
+                    println!("Backlight - on");
                     // sleep for one layer time
                     sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32));
+                    println!("Displayed");
                     // turn off the backlight
                     pin.set_low();
+                    println!("Backlight - off");
                     // sleep for one layer time excluding refresh time of the display panel
-                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 10000000) as u32));
+                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 15000000) as u32));
+                    println!("Waited");
                 }
             }
         }
+
+        // enable screen after processing
+        pin.set_high();
     }
 }
