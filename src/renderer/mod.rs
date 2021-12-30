@@ -76,7 +76,9 @@ impl Renderer for BaseRenderer {
                     println!("Backlight - off");
                     // sleep for one layer time excluding refresh time of the display panel
                     sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 15000000) as u32));
-                    println!("Waited");
+                    println!("Waited {} {}",
+                             (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 15000000),
+                             (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 15000000) as u32);
                 }
             }
         }
