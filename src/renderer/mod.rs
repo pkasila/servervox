@@ -6,16 +6,23 @@ use std::time::Duration;
 use corevox::network::messages::{DeviceInformation, VoxPack};
 use corevox::network::server::renderer::Renderer;
 use framebuffer::{Framebuffer, KdMode};
+use rppal::gpio::{Gpio, Level, Mode};
 
 pub struct BaseRenderer {
     pub device_information: DeviceInformation,
+    gpio: Gpio,
 }
 
 impl BaseRenderer {
     pub fn new(device_information: DeviceInformation) -> Self {
-        return BaseRenderer {
+        let mut r = BaseRenderer {
             device_information,
+            gpio: Gpio::new().unwrap(),
         };
+
+        r.gpio.set_mode(17, Mode::Output);
+
+        return r;
     }
 }
 
@@ -40,16 +47,31 @@ impl Renderer for BaseRenderer {
 
         let mut fb = Framebuffer::new(Path::new("/dev/fb0")).unwrap();
 
-        for _ in 0..30 * self.device_information.pov_frequency {
-            for chunk in data.chunks((4 * self.device_information.vox_size[0] * self.device_information.vox_size[1]) as usize) {
-                fb.write_frame(chunk);
-                sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32))
-            }
-            for chunk in data.chunks((4 * self.device_information.vox_size[0] * self.device_information.vox_size[1]) as usize).rev() {
-                fb.write_frame(chunk);
-                sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32))
-            }
+        let chunk_size = (4 * self.device_information.vox_size[0] * self.device_information.vox_size[1]) as usize;
+        let mut output_data: Vec<u8> = (*data).to_vec();
+        // reversed order of frames
+        for chunk in data.chunks(chunk_size).rev() {
+            output_data.append(&mut chunk.to_vec());
         }
 
+        // output for 30 seconds
+        for _ in 0..30 {
+            for _ in 0..self.device_information.pov_frequency / 2 {
+                for chunk in output_data.chunks(chunk_size).step_by(2) {
+                    // write to framebuffer
+                    fb.write_frame(chunk);
+                    // sleep for display panel refresh time
+                    sleep(Duration::new(0, 10000000));
+                    // turn on the backlight
+                    self.gpio.write(17, Level::High);
+                    // sleep for one layer time
+                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32));
+                    // turn off the backlight
+                    self.gpio.write(17, Level::Low);
+                    // sleep for one layer time excluding refresh time of the display panel
+                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 10000000) as u32));
+                }
+            }
+        }
     }
 }
