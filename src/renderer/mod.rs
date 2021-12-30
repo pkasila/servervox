@@ -70,7 +70,7 @@ impl Renderer for BaseRenderer {
                     // turn off the backlight
                     pin.set_low();
                     // sleep for one layer time excluding refresh time of the display panel
-                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 10000000) as u32));
+                    sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 9000000) as u32));
                 }
             }
         }
