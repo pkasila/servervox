@@ -6,7 +6,7 @@ use std::time::Duration;
 use corevox::network::messages::{DeviceInformation, VoxPack};
 use corevox::network::server::renderer::Renderer;
 use framebuffer::{Framebuffer, KdMode};
-use rppal::gpio::{Gpio, Level, Mode};
+use rppal::gpio::Gpio;
 
 pub struct BaseRenderer {
     pub device_information: DeviceInformation,
@@ -19,8 +19,6 @@ impl BaseRenderer {
             device_information,
             gpio: Gpio::new().unwrap(),
         };
-
-        r.gpio.set_mode(17, Mode::Output);
 
         return r;
     }
@@ -54,6 +52,9 @@ impl Renderer for BaseRenderer {
             output_data.append(&mut chunk.to_vec());
         }
 
+        // get backlight pin
+        let mut pin = self.gpio.get(17).unwrap().into_output();
+
         // output for 30 seconds
         for _ in 0..30 {
             for _ in 0..self.device_information.pov_frequency / 2 {
@@ -63,11 +64,11 @@ impl Renderer for BaseRenderer {
                     // sleep for display panel refresh time
                     sleep(Duration::new(0, 10000000));
                     // turn on the backlight
-                    self.gpio.write(17, Level::High);
+                    pin.set_high();
                     // sleep for one layer time
                     sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2])) as u32));
                     // turn off the backlight
-                    self.gpio.write(17, Level::Low);
+                    pin.set_low();
                     // sleep for one layer time excluding refresh time of the display panel
                     sleep(Duration::new(0, (1000000000 / (self.device_information.pov_frequency * self.device_information.vox_size[2]) - 10000000) as u32));
                 }

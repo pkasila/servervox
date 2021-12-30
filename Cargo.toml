@@ -9,4 +9,4 @@ edition = "2021"
 tokio = { version = "1.15.0", features = ["full"] }
 corevox = { path = "../corevox" }
 framebuffer = "0.3.1"
-rppal = "0.8.1"
+rppal = "0.13.1"
